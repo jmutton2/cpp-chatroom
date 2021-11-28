@@ -12,6 +12,7 @@ using namespace std;
 
 thread t_send, t_recv; 
 int client_socket; 
+bool exit_flag=false;
 void recv_message(int client_socket); 
 void send_message(int client_socket); 
 
