@@ -8,9 +8,7 @@
 #include <unistd.h>
 #include <thread>
 #include <signal.h>
-#include <mutex>
 #define MAX_LEN 200
-#define NUM_COLORS 6
 
 using namespace std;
 
@@ -35,13 +33,6 @@ void send_message(int client_socket){
 		char str[MAX_LEN];
 		cin.getline(str,MAX_LEN);
 		send(client_socket,str,sizeof(str),0);
-		if(strcmp(str,"#exit")==0)
-		{
-			exit_flag=true;
-			t_recv.detach();	
-			close(client_socket);
-			return;
-		}	
 	}		
 }
 
