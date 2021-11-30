@@ -17,11 +17,57 @@ using namespace std;
 bool exit_flag=false;
 thread t_send, t_recv;
 int client_socket;
-//string def_col="\033[0m";
 
+int eraseText(int cnt){
+	char back_space=8;
+	for(int i=0; i<cnt; i++)
+	{
+		cout<<back_space;
+	}	
+	return 0;
+}
 
-void send_message(int client_socket);
-void recv_message(int client_socket);
+// Send message to everyone
+void send_message(int client_socket){
+	while(1)
+	{
+		cout<<"You : ";
+		char str[MAX_LEN];
+		cin.getline(str,MAX_LEN);
+		send(client_socket,str,sizeof(str),0);
+		if(strcmp(str,"#exit")==0)
+		{
+			exit_flag=true;
+			t_recv.detach();	
+			close(client_socket);
+			return;
+		}	
+	}		
+}
+
+void recv_message(int client_socket){
+	while(1)
+	{
+		if(exit_flag)
+			return;
+		char name[MAX_LEN], str[MAX_LEN];
+		int color_code;
+		int bytes_received=recv(client_socket,name,sizeof(name),0);
+		if(bytes_received<=0)
+			continue;
+		recv(client_socket,&color_code,sizeof(color_code),0);
+		recv(client_socket,str,sizeof(str),0);
+		eraseText(6);
+		
+		if(strcmp(name,"#NULL")!=0)
+			cout<<name<<" : "<<str<<endl;
+		else
+			cout<<str<<endl;
+		cout<<"You : ";
+		fflush(stdout);
+	}	
+}
+
 
 int main()
 {
@@ -47,7 +93,7 @@ int main()
 	cin.getline(name,MAX_LEN);
 	send(client_socket,name,sizeof(name),0);
 
-	cout<<"\n\t  ====== Welcome to the chat-room ======   "<<endl;
+	cout<<"\n\t  Welcome to chatroom  "<<endl;
 
 	thread t1(send_message, client_socket);
 	thread t2(recv_message, client_socket);
@@ -63,57 +109,3 @@ int main()
 	return 0;
 }
 
-// Erase text from terminal
-int eraseText(int cnt)
-{
-	char back_space=8;
-	for(int i=0; i<cnt; i++)
-	{
-		cout<<back_space;
-	}	
-	return 0;
-}
-
-// Send message to everyone
-void send_message(int client_socket)
-{
-	while(1)
-	{
-		cout<<"You : ";
-		char str[MAX_LEN];
-		cin.getline(str,MAX_LEN);
-		send(client_socket,str,sizeof(str),0);
-		if(strcmp(str,"#exit")==0)
-		{
-			exit_flag=true;
-			t_recv.detach();	
-			close(client_socket);
-			return;
-		}	
-	}		
-}
-
-// Receive message
-void recv_message(int client_socket)
-{
-	while(1)
-	{
-		if(exit_flag)
-			return;
-		char name[MAX_LEN], str[MAX_LEN];
-		int color_code;
-		int bytes_received=recv(client_socket,name,sizeof(name),0);
-		if(bytes_received<=0)
-			continue;
-		recv(client_socket,&color_code,sizeof(color_code),0);
-		recv(client_socket,str,sizeof(str),0);
-		eraseText(6);
-		
-		if(strcmp(name,"#NULL")!=0)
-			cout<<name<<" : "<<str<<endl;
-		else
-			cout<<str<<endl;
-		cout<<"You : ";
-		fflush(stdout);
-	}	
-}
