@@ -30,8 +30,14 @@ int main()
 	struct sockaddr_in client;
 	client.sin_family=AF_INET;
 	client.sin_port=htons(5000);
-	client.sin_addr.s_addr=INADDR_ANY;
+	// client.sin_addr.s_addr=INADDR_ANY;
 	bzero(&client.sin_zero,0);
+
+	if(inet_pton ( AF_INET, "10.0.2.15", &client.sin_addr)<=0)
+	{
+		printf ( "\nInvalid address ! This IP Address is not supported !\n" );
+		return -1;
+	}
 
 	if((connect(clientSocket,(struct sockaddr *)&client,sizeof(struct sockaddr_in)))==-1)
 	{
