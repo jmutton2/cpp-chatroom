@@ -12,8 +12,8 @@
 
 using namespace std;
 
-struct client
-{
+struct client {
+
 	int id;
 	int socket;
     string name;
@@ -22,8 +22,9 @@ struct client
 
 vector<client> clients;
 
-void setName(int id, char name[])
-{
+//Sets the user's name
+void setName(int id, char name[]) {
+
 	for(int i=0; i<clients.size(); i++)
 	{
 			if(clients[i].id==id)	
@@ -33,6 +34,7 @@ void setName(int id, char name[])
 	}	
 }
 
+//Broadcast for all messages
 int broadcast(string message, int id) {
 
 	char temp[200];
@@ -51,6 +53,7 @@ int broadcast(string message, int id) {
 	}		
 }
 
+//Broadcast displayed on new user join
 int welcomeBroadcast(string name, int sender_id) {
 
 	char temp[200];
@@ -68,6 +71,7 @@ int welcomeBroadcast(string name, int sender_id) {
 	}	
 }
 
+//Broadcast displayed on user leave
 int leaveBroadcast(int id) {
 
 	char temp[200];
@@ -85,21 +89,8 @@ int leaveBroadcast(int id) {
 	}	
 }
 
-// void endConnection(int id)
-// {
-// 	for(int i=0; i<clients.size(); i++)
-// 	{
-// 		if(clients[i].id==id)	
-// 		{
-// 			clients.erase(clients.begin()+i);
-// 			close(clients[i].socket);
-// 			break;
-// 		}
-// 	}				
-// }
+void clientHandler(int clientSocket, int id) {
 
-void clientHandler(int clientSocket, int id)
-{
 	char name[200];
     char str[200];
     
@@ -108,15 +99,19 @@ void clientHandler(int clientSocket, int id)
 	setName(id,name);									
     welcomeBroadcast(name,id);	
 	
-    while(true)
-	{
-		recv(clientSocket,str,sizeof(str),0);
-		broadcast(string(str),id);
+	bool running = true;
+    while(running) {
 
-        if(strcmp(str,"/exit")==0)
-		{							
-			leaveBroadcast(id);				
+		//Awaits client message, rebroadcasts to all connected users.
+		recv(clientSocket,str,sizeof(str),0);
+
+        if(strcmp(str,"/exit")==0) {				
+
+			leaveBroadcast(id);		
+			running = false;		
 			break;
+		} else  {
+			broadcast(string(str),id);
 		}
 	}	
 }
@@ -157,6 +152,7 @@ int main() {
 
 	while(true) {
 
+		//Checks for new user connection
 		if((clientSocket = accept(serverSocket,(struct sockaddr *)&client,&len))==-1) {
 
 			perror("accept error: ");
@@ -165,6 +161,7 @@ int main() {
 
 		id++;
 
+		//Creates a new thread to deal with the client, then pushes it to the vector of clients
 		thread th(clientHandler,clientSocket,id);
 
 		clients.push_back({id, clientSocket, string("Anon"), (move(th))});
